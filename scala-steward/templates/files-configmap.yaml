@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "scala-steward-files"
+data:
+  repos.md: |
+{{- tpl (.Files.Get "files/repos.md") . | nindent 4 }}
+  password.sh: |
+{{- tpl (.Files.Get "files/password.sh") . | nindent 4 }}

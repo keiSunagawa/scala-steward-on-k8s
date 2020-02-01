@@ -1,0 +1,57 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: "scala-steward"
+spec:
+  # setting UTC
+  schedule: "0 11 * * *"
+  concurrencyPolicy: Forbid
+  suspend: false
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          containers:
+          - name: "scala-steward"
+            image: "fthomas/scala-steward:latest"
+            env:
+              - name: GITHUB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: scala-steward-secret
+                    key: githubPassword
+            volumeMounts:
+              - mountPath: /opt/scala-steward/
+                name: opt-vol
+            args:
+              - "--workspace"
+              - "/etc/workspace"
+              - "--repos-file"
+              - "/opt/scala-steward/repos.md"
+              - "--git-author-email"
+              - "{{ .Values.github.email  }}"
+              - "--vcs-api-host"
+              - "https://api.github.com"
+              - "--vcs-login"
+              - "{{ .Values.github.user  }}"
+              - "--git-ask-pass"
+              - "/opt/scala-steward/password.sh"
+              - "--process-timeout"
+              - "90min"
+            # lifecycle:
+            #   preStop:
+            #     exec:
+            #       command: ["echo stop && sleep 50000"]
+          volumes:
+            - name: opt-vol
+              configMap:
+                name: "scala-steward-files"
+                items:
+                  - key: "repos.md"
+                    path: "repos.md"
+                  - key: "password.sh"
+                    path: "password.sh"
+                    mode: 0777
+          restartPolicy: Never
+

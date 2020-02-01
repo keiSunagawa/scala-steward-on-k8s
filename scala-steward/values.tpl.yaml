@@ -1,0 +1,6 @@
+github:
+  user: <your github user>
+  email: "<your github email>"
+  password: "<your github password>"
+
+targetRepos: []
